@@ -9,8 +9,14 @@ all: floppy.img
 
 .PHONY: clean run
 
-.rs.o:
-	$(RUSTC) -O --target i686-unknown-linux-gnu -L ./bin -C relocation-model=static --crate-type lib -o $@ --emit obj $<
+librlibc.rlib:
+	$(RUSTC) -O --target i686-unknown-linux-gnu -L ./bin -C relocation-model=static --crate-type lib -o $@ rlibc.rs
+
+librlibc.o:
+	$(RUSTC) -O --target i686-unknown-linux-gnu -L ./bin -C relocation-model=static --crate-type lib -o $@ --emit obj rlibc.rs
+
+main.o: librlibc.rlib
+	$(RUSTC) -O --target i686-unknown-linux-gnu -L ./ -L ./bin -C relocation-model=static --crate-type lib -o $@ --emit obj main.rs
 
 .asm.o:
 	$(NASM) -f elf32 -o $@ $<
@@ -22,11 +28,11 @@ floppy.img: loader.bin main.bin
 loader.bin: loader.asm
 	$(NASM) -o $@ -f bin $<
 
-main.bin: linker.ld main.o
+main.bin: linker.ld main.o librlibc.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
 run: floppy.img
 	$(QEMU) -fda $<
 
 clean:
-	rm -f *.bin *.o *.img
+	rm -f *.bin *.o *.img *.rlib

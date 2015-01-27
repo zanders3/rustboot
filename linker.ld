@@ -2,7 +2,7 @@ ENTRY(main)
 OUTPUT_FORMAT(binary)
 
 MEMORY {
-    ram : org = 0x7e00, l = 12K
+    ram : org = 0x7e00, l = 24K
 }
 
 SECTIONS {
@@ -11,10 +11,4 @@ SECTIONS {
     .text : {
         *(.text)
     } >ram
-
-    /DISCARD/ : {
-        *(.comment)
-        *(.eh_frame)
-        *(.rel.eh_frame)
-    }
 }
